@@ -8,6 +8,8 @@ from lxml.html import parse
 from lxml import etree
 import pandas as pd
 import multiprocessing
+from azure.storage.blob import BlobServiceClient
+from azure.storage.filedatalake import DataLakeServiceClient
 
 def cleanse_data(team):
     # Read data from file
@@ -33,7 +35,8 @@ def cleanse_data(team):
 
     sorted_df = df.sort_values(by=['HR'], ascending=False)
     sorted_df.to_csv(team+'_stats_clean.csv', index=False)
-    print(sorted_df.head(10))
+    #print(sorted_df.head(10))
+
 
 def extract_data(team):
     # Open the URL and read its HTML content
@@ -86,16 +89,48 @@ def extract_data(team):
         
         print("Done")
 
-
     #print(df)
     df.to_csv(team+'_stats_all-time-by-season.csv', index=False)
-    print(df.info())
+    #print(df.info())
+
+
+
+def upload_data(team):
+
+    # Azure storage account connection string
+    # Replace with your actual connection string from Azure portal
+    connection_string = "DefaultEndpointsProtocol=https;AccountName=adls123rafi;"
+
+    # Initialize a BlobServiceClient using the connection string
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+
+    # Define the container name and the blob (file) name
+    container_name = "mlb"
+
+    blob_stats = 'data/'+team+'/stats_all-time-by-season.csv'
+    blob_clean = 'data/'+team+'/stats_clean.csv'
+
+    # Create a BlobClient object
+    blob_client_stats = blob_service_client.get_blob_client(container=container_name, blob=blob_stats)
+    blob_client_clean = blob_service_client.get_blob_client(container=container_name, blob=blob_clean)
+
+    # Upload the CSV file to Azure ADLS
+    with open(team+'_stats_all-time-by-season.csv', "rb") as data:
+        blob_client_stats.upload_blob(data, overwrite=True)  # overwrite=True ensures the file is replaced if it exists
+    print(f"CSV file '{blob_stats}' uploaded to Azure ADLS successfully.")
+    
+    
+    with open(team+'_stats_clean.csv', "rb") as data:
+        blob_client_clean.upload_blob(data, overwrite=True)  # overwrite=True ensures the file is replaced if it exists
+    print(f"CSV file '{blob_clean}' uploaded to Azure ADLS successfully.")
+
 
 # All data steps
 def process_data(team):
     team = team.strip()
     extract_data(team)
     cleanse_data(team)
+    upload_data(team)
     return
 
 #main
