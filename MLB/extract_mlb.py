@@ -135,19 +135,16 @@ def extract_data(team):
         print("Done")
 
     #print(df)
-    df.to_csv(team+'_stats_all-time-by-season.csv', index=False)
+    df.to_csv(HOME_FOLDER+team+'_stats_all-time-by-season.csv', index=False)
     #print(df.info())
 
 def upload_data(team):
 
-<<<<<<< HEAD
     # Azure storage account connection string
     # Replace with your actual connection string from Azure portal
     # Initialize a BlobServiceClient using the connection string
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    # blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 
-=======
->>>>>>> 65ce153 (uploading to Azure)
     # Define the container name and the blob (file) name
     container_name = "mlb"
 
@@ -159,13 +156,13 @@ def upload_data(team):
     blob_client_clean = blob_service_client.get_blob_client(container=container_name, blob=blob_clean)
 
     # Upload the CSV file to Azure ADLS
-    with open(team+'_stats_all-time-by-season.csv', "rb") as data:
+    with open(HOME_FOLDER+team+'_stats_all-time-by-season.csv', "rb") as data:
         blob_client_stats.upload_blob(data, overwrite=True)  # overwrite=True ensures the file is replaced if it exists
     print(f"CSV file '{blob_stats}' uploaded to Azure ADLS successfully.")
-    os.remove(team+'_stats_all-time-by-season.csv')
+    os.remove(HOME_FOLDER+team+'_stats_all-time-by-season.csv')
     
     
-    with open(team+'_stats_clean.csv', "rb") as data:
+    with open(HOME_FOLDER+team+'_stats_clean.csv', "rb") as data:
         blob_client_clean.upload_blob(data, overwrite=True)  # overwrite=True ensures the file is replaced if it exists
     print(f"CSV file '{blob_clean}' uploaded to Azure ADLS successfully.")
     os.remove(team+'_stats_clean.csv')
@@ -173,8 +170,8 @@ def upload_data(team):
 # All data steps
 def process_data(team):
     team = team.strip()
-    extract_data(team)
-    cleanse_data(team)
+    #extract_data(team)
+    #cleanse_data(team)
     upload_data(team)
     return
 
@@ -197,4 +194,6 @@ def main():
 blob_service_client = connecToAzure()
 if __name__ == "__main__":
     MAX_PAGES = 5000
+    HOME_FOLDER = '/home/user/MLB_Data/'
+
     main()
