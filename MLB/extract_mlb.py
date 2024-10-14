@@ -59,7 +59,7 @@ def connecToAzure() -> BlobServiceClient:
 
 def cleanse_data(team):
     # Read data from file
-    df = pd.read_csv(team+"_stats_all-time-by-season.csv", skiprows=1)
+    df = pd.read_csv(HOME_FOLDER+team+"_stats_all-time-by-season.csv", skiprows=1)
 
     print("Cleansing "+team+" data")
 
@@ -80,7 +80,7 @@ def cleanse_data(team):
 
 
     sorted_df = df.sort_values(by=['HR'], ascending=False)
-    sorted_df.to_csv(team+'_stats_clean.csv', index=False)
+    sorted_df.to_csv(HOME_FOLDER+team+'_stats_clean.csv', index=False)
     #print(sorted_df.head(10))
 
 def extract_data(team):
@@ -131,7 +131,7 @@ def extract_data(team):
             df = pd.DataFrame(table_data)
         else:
             df = df._append(table_data, ignore_index=True)
-        
+
         print("Done")
 
     #print(df)
@@ -165,13 +165,13 @@ def upload_data(team):
     with open(HOME_FOLDER+team+'_stats_clean.csv', "rb") as data:
         blob_client_clean.upload_blob(data, overwrite=True)  # overwrite=True ensures the file is replaced if it exists
     print(f"CSV file '{blob_clean}' uploaded to Azure ADLS successfully.")
-    os.remove(team+'_stats_clean.csv')
+    os.remove(HOME_FOLDER+team+'_stats_clean.csv')
 
 # All data steps
 def process_data(team):
     team = team.strip()
-    #extract_data(team)
-    #cleanse_data(team)
+    extract_data(team)
+    cleanse_data(team)
     upload_data(team)
     return
 
