@@ -59,7 +59,7 @@ def connecToAzure() -> BlobServiceClient:
 
 def cleanse_data(team):
     # Read data from file
-    df = pd.read_csv(team+"_stats_all-time-by-season.csv", skiprows=1)
+    df = pd.read_csv(HOME_FOLDER+team+"_stats_all-time-by-season.csv", skiprows=1)
 
     print("Cleansing "+team+" data")
 
@@ -80,7 +80,7 @@ def cleanse_data(team):
 
 
     sorted_df = df.sort_values(by=['HR'], ascending=False)
-    sorted_df.to_csv(team+'_stats_clean.csv', index=False)
+    sorted_df.to_csv(HOME_FOLDER+team+'_stats_clean.csv', index=False)
     #print(sorted_df.head(10))
 
 def extract_data(team):
@@ -131,23 +131,20 @@ def extract_data(team):
             df = pd.DataFrame(table_data)
         else:
             df = df._append(table_data, ignore_index=True)
-        
+
         print("Done")
 
     #print(df)
-    df.to_csv(team+'_stats_all-time-by-season.csv', index=False)
+    df.to_csv(HOME_FOLDER+team+'_stats_all-time-by-season.csv', index=False)
     #print(df.info())
 
 def upload_data(team):
 
-<<<<<<< HEAD
     # Azure storage account connection string
     # Replace with your actual connection string from Azure portal
     # Initialize a BlobServiceClient using the connection string
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    # blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 
-=======
->>>>>>> 65ce153 (uploading to Azure)
     # Define the container name and the blob (file) name
     container_name = "mlb"
 
@@ -159,16 +156,16 @@ def upload_data(team):
     blob_client_clean = blob_service_client.get_blob_client(container=container_name, blob=blob_clean)
 
     # Upload the CSV file to Azure ADLS
-    with open(team+'_stats_all-time-by-season.csv', "rb") as data:
+    with open(HOME_FOLDER+team+'_stats_all-time-by-season.csv', "rb") as data:
         blob_client_stats.upload_blob(data, overwrite=True)  # overwrite=True ensures the file is replaced if it exists
     print(f"CSV file '{blob_stats}' uploaded to Azure ADLS successfully.")
-    os.remove(team+'_stats_all-time-by-season.csv')
+    os.remove(HOME_FOLDER+team+'_stats_all-time-by-season.csv')
     
     
-    with open(team+'_stats_clean.csv', "rb") as data:
+    with open(HOME_FOLDER+team+'_stats_clean.csv', "rb") as data:
         blob_client_clean.upload_blob(data, overwrite=True)  # overwrite=True ensures the file is replaced if it exists
     print(f"CSV file '{blob_clean}' uploaded to Azure ADLS successfully.")
-    os.remove(team+'_stats_clean.csv')
+    os.remove(HOME_FOLDER+team+'_stats_clean.csv')
 
 # All data steps
 def process_data(team):
@@ -197,4 +194,6 @@ def main():
 blob_service_client = connecToAzure()
 if __name__ == "__main__":
     MAX_PAGES = 5000
+    HOME_FOLDER = '/home/user/MLB_Data/'
+
     main()
